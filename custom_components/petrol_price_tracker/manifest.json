@@ -1,0 +1,8 @@
+{
+    "domain": "petrol_price_tracker",
+    "name": "Petrol Price Tacker",
+    "documentation": "",
+    "requirements": [],
+    "codeowners": ["@micahhenshaw"],
+    "version": "1.0.0"
+  }
