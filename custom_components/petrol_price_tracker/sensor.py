@@ -10,14 +10,19 @@ from homeassistant.const import ATTR_ATTRIBUTION
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
 from homeassistant.util import Throttle
+from homeassistant.helpers.entity import generate_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
 ATTR_BRAND = "brand"
 ATTR_UPDATED = "updated"
+ATTR_ADDRESS = "address"
+ATTR_UID = "uid"
 
 CONF_UPDATE_FREQUENCY = 'update_frequency'
 CONF_UPDATE_FREQUENCY_DEFAULT = 5
+
+SCAN_INTERVAL = datetime.timedelta(minutes=5)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -63,7 +68,7 @@ class FuelPriceData:
         self._data = None
         self.error = None
 
-    @Throttle(MIN_TIME_BETWEEN_UPDATES)
+    # @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         try:
             res = requests.get(
@@ -89,14 +94,20 @@ class StationPriceSensor(Entity):
         self._uid = station['id']
         self._prices = station['prices']
         self._brand = station['brand']
+        self._address = station['address']
+        # self.entity_id = generate_entity_id("sensor.{}", "petrol_price_tracker_"  + self._uid, hass)
 
     @property
-    def unique_id(self) -> str:
-       return f"petrol_price_tracker_{self._uid}"
+    def unique_id(self) -> Optional[str]:
+        """Return a unique ID."""
+        return "petrol_price_tracker_" + self._uid
 
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
+        if not self.registry_entry:
+            return self.unique_id
+            
         return 'Petrol Price Tracker ' + self._name
 
     @property
@@ -114,7 +125,9 @@ class StationPriceSensor(Entity):
         updated = datetime.datetime.fromtimestamp(updatedInt)
         return {
             ATTR_BRAND: self._brand,
+            ATTR_ADDRESS: self._address or None,
             ATTR_UPDATED: updated or None,
+            ATTR_UID: self._uid or None,
         }
 
     @property
