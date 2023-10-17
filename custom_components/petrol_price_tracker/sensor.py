@@ -108,7 +108,7 @@ class StationPriceSensor(Entity):
         if not self.registry_entry:
             return self.unique_id
             
-        return 'Petrol Price Tracker ' + self._name
+        return self._name
 
     @property
     def state(self) -> Optional[float]:
